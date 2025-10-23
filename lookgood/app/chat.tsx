@@ -64,6 +64,41 @@ export default function ChatScreen() {
     }).start();
   }, [isDarkMode]);
 
+  const backgroundColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#FFFFFF', '#000000'],
+  });
+
+  const textColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#000000', '#FFFFFF'],
+  });
+
+  const secondaryTextColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#666666', '#999999'],
+  });
+
+  const inputBackgroundColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#F5F5F5', '#1A1A1A'],
+  });
+
+  const userBubbleColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#000000', '#FFFFFF'],
+  });
+
+  const aiBubbleColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#F5F5F5', '#1A1A1A'],
+  });
+
+  const sendButtonColor = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#000000', '#FFFFFF'],
+  });
+
   const handleSend = () => {
     if (inputText.trim()) {
       const newMessage: Message = {
@@ -78,11 +113,10 @@ export default function ChatScreen() {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
 
-      // Simulate AI response
       setTimeout(() => {
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
-          text: "I'm here to help! How can I assist you today?",
+          text: "I'm here to help you look your best! What would you like advice on?",
           isUser: false,
         };
         setMessages(prev => [...prev, aiResponse]);
@@ -93,55 +127,9 @@ export default function ChatScreen() {
     }
   };
 
-  const backgroundColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#FFFFFF', '#000000'],
-  });
-
-  const textColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#000000', '#FFFFFF'],
-  });
-
-  const textSecondaryColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#666666', '#999999'],
-  });
-
-  const inputBgColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#F8F8F8', '#1A1A1A'],
-  });
-
-  const messageBubbleUserColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#000000', '#FFFFFF'],
-  });
-
-  const messageBubbleUserTextColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#FFFFFF', '#000000'],
-  });
-
-  const messageBubbleAiColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#F5F5F5', '#1A1A1A'],
-  });
-
-  const messageBubbleAiTextColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#000000', '#FFFFFF'],
-  });
-
-  const sendButtonInactiveColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#E0E0E0', '#333333'],
-  });
-
-  const sendButtonInactiveTextColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#999999', '#666666'],
-  });
+  const handlePromptSelect = (prompt: string) => {
+    setInputText(prompt);
+  };
 
   return (
     <Animated.View style={[styles.container, { backgroundColor }]}>
@@ -192,21 +180,21 @@ export default function ChatScreen() {
           ref={scrollViewRef}
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
         >
           {messages.length === 0 ? (
             <View style={styles.emptyState}>
-              <Animated.Text style={[styles.welcomeText, { color: textColor }]}>
+              <Animated.Text style={[styles.greeting, { color: textColor }]}>
                 how would you like to look today?
               </Animated.Text>
               <View style={styles.promptsContainer}>
                 {suggestedPrompts.map((prompt, index) => (
                   <TouchableOpacity
                     key={index}
-                    onPress={() => setInputText(prompt)}
+                    style={styles.promptCard}
+                    onPress={() => handlePromptSelect(prompt)}
                   >
-                    <Animated.View style={[styles.promptCard, { backgroundColor: inputBgColor }]}>
-                      <Animated.Text style={[styles.promptText, { color: textSecondaryColor }]}>
+                    <Animated.View style={[styles.promptCardInner, { backgroundColor: inputBackgroundColor }]}>
+                      <Animated.Text style={[styles.promptText, { color: secondaryTextColor }]}>
                         {prompt}
                       </Animated.Text>
                     </Animated.View>
@@ -216,25 +204,21 @@ export default function ChatScreen() {
             </View>
           ) : (
             messages.map((message) => (
-              <View
-                key={message.id}
-                style={[
-                  styles.messageRow,
-                  message.isUser && styles.userMessageRow,
-                ]}
-              >
+              <View key={message.id} style={styles.messageRow}>
                 <Animated.View
                   style={[
                     styles.messageBubble,
                     message.isUser 
-                      ? { backgroundColor: messageBubbleUserColor, borderBottomRightRadius: 4 }
-                      : { backgroundColor: messageBubbleAiColor, borderBottomLeftRadius: 4 },
+                      ? [styles.userMessage, { backgroundColor: userBubbleColor }]
+                      : [styles.aiMessage, { backgroundColor: aiBubbleColor }],
                   ]}
                 >
                   <Animated.Text
                     style={[
                       styles.messageText,
-                      { color: message.isUser ? messageBubbleUserTextColor : messageBubbleAiTextColor },
+                      message.isUser 
+                        ? { color: isDarkMode ? '#000000' : '#FFFFFF' }
+                        : { color: textColor },
                     ]}
                   >
                     {message.text}
@@ -245,36 +229,33 @@ export default function ChatScreen() {
           )}
         </ScrollView>
 
-        {/* Minimalist Input */}
-        <Animated.View style={[styles.inputContainer, { backgroundColor }]}>
-          <Animated.View style={[styles.inputWrapper, { backgroundColor: inputBgColor }]}>
-            <TextInput
-              style={[styles.input, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}
-              placeholder="Message..."
-              placeholderTextColor={isDarkMode ? '#666666' : '#A0A0A0'}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-              maxLength={2000}
-              textAlignVertical="center"
-            />
-            <Animated.View
-              style={[
-                styles.sendButton,
-                { backgroundColor: inputText.trim() ? textColor : sendButtonInactiveColor }
-              ]}
-            >
+        {/* Input Area */}
+        <Animated.View style={[styles.inputContainer, { backgroundColor: inputBackgroundColor }]}>
+          <View style={styles.inputWrapper}>
+            <Animated.View style={[styles.input, { backgroundColor: inputBackgroundColor }]}>
+              <TextInput
+                style={[styles.textInput, { color: textColor.toString() }]}
+                placeholder="what's up..."
+                placeholderTextColor={isDarkMode ? '#666666' : '#999999'}
+                value={inputText}
+                onChangeText={setInputText}
+                multiline
+                maxLength={2000}
+                textAlignVertical="center"
+              />
+            </Animated.View>
+            <Animated.View style={[styles.sendButton, { backgroundColor: sendButtonColor }]}>
               <TouchableOpacity
+                style={styles.sendButtonTouchable}
                 onPress={handleSend}
                 disabled={!inputText.trim()}
-                style={styles.sendButtonTouchable}
               >
-                <Animated.Text style={[styles.sendIcon, { color: inputText.trim() ? backgroundColor : sendButtonInactiveTextColor }]}>
-                  →
-                </Animated.Text>
+                <Text style={[styles.sendIcon, { color: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+                  ↑
+                </Text>
               </TouchableOpacity>
             </Animated.View>
-          </Animated.View>
+          </View>
         </Animated.View>
       </KeyboardAvoidingView>
       </SafeAreaView>
@@ -341,64 +322,72 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 80,
   },
-  welcomeText: {
+  greeting: {
     fontSize: 28,
     fontWeight: '300',
-    color: '#000',
     marginBottom: 48,
     textAlign: 'center',
   },
   promptsContainer: {
     width: '100%',
-    gap: 12,
+    gap: 16,
   },
   promptCard: {
-    borderRadius: 20,
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    alignItems: 'center',
+    width: '100%',
+  },
+  promptCardInner: {
+    padding: 20,
+    borderRadius: 16,
+    minHeight: 60,
+    justifyContent: 'center',
   },
   promptText: {
     fontSize: 16,
-    fontWeight: '400',
+    textAlign: 'center',
   },
   messageRow: {
-    marginBottom: 20,
-  },
-  userMessageRow: {
-    alignItems: 'flex-end',
+    marginBottom: 16,
   },
   messageBubble: {
-    maxWidth: '80%',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+    padding: 16,
     borderRadius: 20,
+    maxWidth: '80%',
+  },
+  userMessage: {
+    alignSelf: 'flex-end',
+    borderBottomRightRadius: 4,
+  },
+  aiMessage: {
+    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 4,
   },
   messageText: {
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   inputContainer: {
     paddingHorizontal: 24,
     paddingVertical: 16,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
     gap: 12,
     minHeight: 48,
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    maxHeight: 100,
+    borderRadius: 24,
+    paddingHorizontal: 20,
     paddingVertical: 4,
+    minHeight: 48,
+    justifyContent: 'center',
+  },
+  textInput: {
+    fontSize: 16,
+    maxHeight: 120,
+    textAlignVertical: 'center',
   },
   sendButton: {
     width: 32,
@@ -414,6 +403,6 @@ const styles = StyleSheet.create({
   },
   sendIcon: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

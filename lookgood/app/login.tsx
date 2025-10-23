@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -116,6 +115,14 @@ export default function LoginScreen() {
             </>
           )}
         </TouchableOpacity>
+
+        {/* Forgot Password Button - Bypass Auth */}
+        <TouchableOpacity 
+          style={styles.forgotPasswordButton}
+          onPress={() => router.replace('/chat')}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot Password? (Dev Mode)</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -169,5 +176,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  forgotPasswordButton: {
+    marginTop: 24,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: '#666',
+    textDecorationLine: 'underline',
+  },
 });
-
